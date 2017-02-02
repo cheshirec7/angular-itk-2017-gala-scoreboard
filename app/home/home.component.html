@@ -1,0 +1,45 @@
+<div id="header">
+  <img src="assets/img/circles.png" class="circles" alt="circles">
+  <img src="assets/img/itk.png" class="logo" alt="Integrative Touch for Kids">
+  <div id="carousel-itk" class="carousel slide carousel-fade" data-ride="carousel">
+    <div class="carousel-inner" role="listbox">
+      <div class="item active">
+        <img src="assets/img/sponsor1-320x160-white.jpg" alt="">
+      </div>
+      <div class="item">
+        <img src="assets/img/sponsor2-320x160-white.jpg" alt="">
+      </div>
+      <div class="item">
+        <img src="assets/img/sponsor3-320x160-white.jpg" alt="">
+      </div>
+      <div class="item">
+        <img src="assets/img/sponsor4-320x160-white.jpg" alt="">
+      </div>
+      <div class="item">
+        <img src="assets/img/sponsor5-320x160-white.jpg" alt="">
+      </div>
+    </div>
+  </div>
+</div>
+<div [@slideInOut]="slideState" (@slideInOut.done)="animationDone($event)" style="padding:10px;">
+<table *ngIf="data" [ngStyle]="{'font-size': fsize + 'px'}">
+  <thead>
+    <tr>
+      <th>Item #</th>
+      <th>Item Name</th>
+      <th>Value</th>
+      <th>Current Bid</th>
+      <th>High Bidder</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let arrayItem of data">
+      <td width=1>{{arrayItem.number}}</td>
+      <td>{{arrayItem.name}}</td>
+      <td width=1>${{arrayItem.value}}</td>
+      <td width=1>${{arrayItem.currentBid}}</td>
+      <td>{{arrayItem.client}}</td>
+    </tr>
+  </tbody>
+</table>
+<div>

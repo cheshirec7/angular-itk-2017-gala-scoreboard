@@ -1,0 +1,75 @@
+#header {
+    background-color: #fff;
+    height: 125px;
+    padding: 10px;
+    border-bottom: 5px solid #e4701d;
+    width: 100%;
+    z-index: 1000;
+    display: block;
+}
+#header img {
+    max-height: 100px;
+}
+
+#header img.circles {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+}
+
+#header img.logo {
+    position: absolute;
+    left: 140px;
+    top: 25px;
+    max-height: 80px;
+}
+
+#carousel-itk {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table, th, td {
+    border: 1px solid #555;
+}
+
+td, th {
+    text-align: left;
+    padding: 10px;
+    color: #eee;
+}
+
+th {
+    background-color: #222;
+}
+
+tr:nth-child(even) {
+    background-color: #222;
+}
+
+.carousel-fade .carousel-inner { background: #fff; }
+.carousel-fade .carousel-control { z-index: 2; }
+.carousel-fade .item {
+  opacity: 0;
+  -webkit-transition-property: opacity;
+  -moz-transition-property: opacity;
+  -o-transition-property: opacity;
+  transition-property: opacity;
+}
+
+.carousel-fade .next.left,
+.carousel-fade .prev.right,
+.carousel-fade .item.active { opacity: 1; }
+
+.carousel-fade .active.left,
+.carousel-fade .active.right {
+  left: 0;
+  opacity: 0;
+  z-index: 1;
+}
