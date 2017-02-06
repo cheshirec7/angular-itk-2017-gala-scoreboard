@@ -9,13 +9,9 @@ import {
 } from '@angular/core';
 
 import { ActivatedRoute } from '@angular/router';
-
-import { Http } from '@angular/http';
+import { Http, Headers, RequestOptions, Response } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
-import { Subscription } from "rxjs";
 import { TimerObservable } from "rxjs/observable/TimerObservable";
-import 'rxjs/add/operator/catch'
-import 'rxjs/add/operator/map';
 
 @Component({
   selector: 'home',
@@ -24,19 +20,13 @@ import 'rxjs/add/operator/map';
   animations: [
     trigger('slideInOut', [
       state('center', style({
-        transform: 'translate3d(0, 0, 0)',
-        opacity: '1'
+        transform: 'translate3d(0, 0, 0)'
       })),
       state('left', style({
-        transform: 'translate3d(-100%, 0, 0)',
-        opacity: '1'
+        transform: 'translate3d(-100%, 0, 0)'
       })),
       state('right', style({
-        transform: 'translate3d(100%, 0, 0)',
-        opacity: '1'
-      })),
-      state('skip', style({
-        opacity: '0'
+        transform: 'translate3d(100%, 0, 0)'
       })),
       transition('center => left, right => center', animate('800ms ease-in-out')),
     ]),
@@ -44,105 +34,113 @@ import 'rxjs/add/operator/map';
 })
 export class HomeComponent implements OnInit {
 
-  public data: any;
+  public fileData = [];
   public slideState = 'center';
-  public fsize = 20;
+  public startIdx = 0;
+  public endIdx = 0;
+  public fsize = 30;
 
-  private numRowsToDisplay = 19;
-  private displayTimeSecs = 10;
+  private jsessionid = 'B85D107A8C32A8AB7ED0294612BCA956';
+  private url = 'assets/data/next.json?hash_id=';
+  //private url1 = 'http://bputil11.bidpal.net/Scoreboard/slides/1/next.json?hash_id=' + Math.random(); ';//?jsessionid=' + jsessionid;
+
+  private numRowsToDisplay = 13;
+  private displayTimeSecs = 9;
 
   private timer: any;
   private timerSubscription: any;
   private fileSubscription: any;
   private paramSubscription: any;
-  private numItems = 0;
-  private fileData: any;
-  private initialDelaySecs = 0;
   private tick = 0;
 
   constructor(private http: Http,
     private route: ActivatedRoute) {
   }
 
-  restart(delay) {
-    this.timerSubscription.unsubscribe();
-    this.fileSubscription.unsubscribe();
-    this.initialDelaySecs = delay;
-    this.numItems = 0;
-    this.getFileAndStartTimer();
-  }
-
-  populateData() {
-    let needRestart = false;
-    this.data = [];
-    let idx = this.tick * this.numRowsToDisplay;
-    //0*23: 0 to 0+23
-    //1*23: 23 to 23+23
-
-    for (var i = idx; i < idx + this.numRowsToDisplay; i++) {
-      if (i < this.numItems) {
-        let o = new Object;
-        o['number'] = this.fileData.displayData.itemClients[i].item.number;
-        o['name'] = this.fileData.displayData.itemClients[i].item.name;
-        o['value'] = this.fileData.displayData.itemClients[i].item.value;
-        o['currentBid'] = this.fileData.displayData.itemClients[i].item.currentBid;
-        o['client'] = '';
-        if (this.fileData.displayData.itemClients[i].client)
-          o['client'] = this.fileData.displayData.itemClients[i].client.number + ' ' + this.fileData.displayData.itemClients[i].client.lastName;
-        this.data.push(o);
-      } else {
-        needRestart = true;
-        break;
-      }
-    };
-
-    if (this.data.length == 0) {
-      this.slideState = 'skip';
-      this.restart(0);
-    } else if (needRestart)
-      this.restart(this.displayTimeSecs);
-  }
-
   animationDone($event) {
     //console.log($event);
     if ($event.toState == 'left') {
       this.slideState = 'right';
-      this.populateData();
+      this.startIdx = this.tick * this.numRowsToDisplay; //0, 10, 20, 30...
+      this.endIdx = this.startIdx + this.numRowsToDisplay; //0+10=10, 10+10=20
+      //template will show 0 to (10-1), 10 to (20-1)...
+      //example, 100 items, showing by groups of 10: when startIdx=90, endIdx=100, need to restart after delay
+      if (this.endIdx >= this.fileData.length)
+        this.getFileDataAndStartTimer(this.displayTimeSecs);
     } else if ($event.toState == 'right')
       this.slideState = 'center';
   }
 
-  getFileData() {
-    // console.log('getfiledata');
-    return this.http.get('assets/data/next.json?hash_id=' + Math.random())
-      .map(data => data.json())
-      .catch(err => {
-        let o = {
-          displayData: {
-            itemClients: []
-          }
-        };
-        return Observable.of(o);
-      });
+  getFileData(): any {
+
+    // let headers = new Headers();
+    // headers.append('Cookie', 'JSESSIONID=B85D107A8C32A8AB7ED0294612BCA956');
+    // let options = new RequestOptions({
+    //   url: this.url,
+    //   method: 'GET',
+    //   withCredentials: true,
+    //   headers: headers
+    // });
+    //return this.http.get(this.url, options)
+
+    return this.http.get(this.url + Math.random())
+      .map(this.extractData)
+      .catch(this.handleError);
   }
 
-  getFileAndStartTimer() {
-    this.fileSubscription = this.getFileData()
-      .subscribe(filedata => {
-        if (filedata.displayData.itemClients.length > 0) {
+  private extractData(res: Response) {
+    let body = res.json();
+    if (body.hasOwnProperty('displayData')) {
+      let data = body.displayData;
+      if (data.hasOwnProperty('itemClients'))
+        return data.itemClients;
+    }
+    console.error('invalid file format');
+    return [];
+  }
+
+  private handleError(error: Response | any) {
+    // let errMsg: string;
+    // // console.log('error');
+    // if (error instanceof Response) {
+    //   const body = error.json() || '';
+    //   const err = body.error || JSON.stringify(body);
+    //   errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
+    // } else {
+    //   errMsg = error.message ? error.message : error.toString();
+    // }
+    // console.error(errMsg);
+    return Observable.throw('error');
+  }
+
+  startTimer(delay, displayTime, doRestart) {
+    this.timer = TimerObservable.create(delay * 1000, displayTime * 1000);
+    if (this.timerSubscription)
+      this.timerSubscription.unsubscribe();
+    this.timerSubscription = this.timer.subscribe(t => {
+      if (doRestart) {
+        this.getFileDataAndStartTimer(delay);
+      } else {
+        this.tick = t;
+        this.slideState = 'left';
+      }
+    });
+  }
+
+  getFileDataAndStartTimer(delay) {
+    if (this.fileSubscription)
+      this.fileSubscription.unsubscribe();
+    this.fileSubscription = this.getFileData().subscribe(
+      filedata => {
+        if (filedata) {
           this.fileData = filedata;
-          this.numItems = filedata.displayData.itemClients.length;
-          this.timer = TimerObservable.create(this.initialDelaySecs * 1000, this.displayTimeSecs * 1000);
-          this.timerSubscription = this.timer.subscribe(t => {
-            this.tick = t;
-            this.slideState = 'left';
-          });
+          this.startTimer(delay, this.displayTimeSecs, false);
         } else {
-          this.timer = TimerObservable.create(2000, 2000);
-          this.timerSubscription = this.timer.subscribe(t => {
-            this.restart(0);
-          });
+          this.startTimer(2, 2, true);
         }
+      },
+      error => {
+        this.startTimer(2, 2, true);
       });
   }
 
@@ -161,7 +159,7 @@ export class HomeComponent implements OnInit {
       if (size > 0)
         this.fsize = size;
 
-      this.getFileAndStartTimer();
+      this.getFileDataAndStartTimer(0);
     });
   }
 

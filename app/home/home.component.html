@@ -21,25 +21,30 @@
     </div>
   </div>
 </div>
-<div [@slideInOut]="slideState" (@slideInOut.done)="animationDone($event)" style="padding:10px;">
-<table *ngIf="data" [ngStyle]="{'font-size': fsize + 'px'}">
-  <thead>
-    <tr>
-      <th>Item #</th>
-      <th>Item Name</th>
-      <th>Value</th>
-      <th>Current Bid</th>
-      <th>High Bidder</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let arrayItem of data">
-      <td width=1>{{arrayItem.number}}</td>
-      <td>{{arrayItem.name}}</td>
-      <td width=1>${{arrayItem.value}}</td>
-      <td width=1>${{arrayItem.currentBid}}</td>
-      <td>{{arrayItem.client}}</td>
-    </tr>
-  </tbody>
-</table>
+<div [@slideInOut]="slideState" (@slideInOut.done)="animationDone($event)" style="padding:10px">
+  <table *ngIf="endIdx > 0" [ngStyle]="{'font-size': fsize + 'px'}">
+    <thead>
+      <tr>
+        <th>Item #</th>
+        <th>Item Name</th>
+        <th>Value</th>
+        <th>Current Bid</th>
+        <th>High Bidder</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <ng-container *ngFor="let itemClient of fileData; let idx = index">
+        <tr *ngIf="idx >= startIdx && idx < endIdx">
+          <td width=1>{{itemClient.item.number}}</td>
+          <td>{{itemClient.item.name}}</td>
+          <td width=1>${{itemClient.item.value}}</td>
+          <td width=1>${{itemClient.item.currentBid}}</td>
+          <td *ngIf="itemClient.client">#{{itemClient.client.number}} {{itemClient.client.lname}}</td>
+          <td *ngIf="!itemClient.client"></td>
+        </tr>
+      </ng-container>
+
+    </tbody>
+  </table>
 <div>
