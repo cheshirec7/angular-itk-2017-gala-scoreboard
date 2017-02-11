@@ -1,6 +1,7 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   trigger,
   state,
   style,
@@ -32,7 +33,7 @@ import { TimerObservable } from "rxjs/observable/TimerObservable";
     ]),
   ]
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
 
   public fileData = [];
   public slideState = 'center';
